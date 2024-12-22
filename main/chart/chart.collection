@@ -1,0 +1,16 @@
+name: "chart"
+scale_along_z: 0
+embedded_instances {
+  id: "renderer"
+  data: "components {\n"
+  "  id: \"chart\"\n"
+  "  component: \"/main/chart/chart.script\"\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"candlestick\"\n"
+  "  type: \"collectionfactory\"\n"
+  "  data: \"prototype: \\\"/main/chart/candlestick.collection\\\"\\n"
+  "\"\n"
+  "}\n"
+  ""
+}

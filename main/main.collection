@@ -1,0 +1,30 @@
+name: "main"
+collection_instances {
+  id: "chart"
+  collection: "/main/chart/chart.collection"
+}
+scale_along_z: 0
+embedded_instances {
+  id: "go"
+  data: "components {\n"
+  "  id: \"main\"\n"
+  "  component: \"/main/main.script\"\n"
+  "}\n"
+  "components {\n"
+  "  id: \"system\"\n"
+  "  component: \"/main/system.script\"\n"
+  "}\n"
+  "components {\n"
+  "  id: \"gui\"\n"
+  "  component: \"/main/gui/gui.gui\"\n"
+  "}\n"
+  ""
+  position {
+    x: 359.0
+    y: 639.0
+  }
+  scale3 {
+    x: 0.891473
+    y: 2.114754
+  }
+}

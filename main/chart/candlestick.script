@@ -1,0 +1,68 @@
+function init(self)
+	self.start_zero_position = go.get_position('zero')
+end
+
+-- 상위 스틱 - (최고가 - 시작가) / 50
+-- 하위 스틱 - (시작가 - 최저가) / 50
+
+-- 스틱의 총 길이 = 상위 스틱 + 하위 스틱
+-- 스틱의 위치 = 현재 위치 + ((전체 길이 / 2) - 하위길이)
+
+-- 바의 길이 = (종가 - 시작가) / 50
+-- 바의 위치 = 플러스 ? 현재 위치 + 상위 길이/2 : 현재 위치 - 하위 길이 / 2
+
+-- 현재 위치 = 시작가 / 50
+
+local function render(self, history)
+	local is_up = history.closing >= history.opening
+	
+	local upper_stick_scale = math.abs(history.highest - history.opening) / 50.0
+	local lower_stick_scale = math.abs(history.lowest - history.opening) / 50.0
+	local stick_scale = upper_stick_scale + lower_stick_scale
+	
+	local bar_scale = math.abs(history.closing - history.opening) / 50.0
+
+	go.set('zero', 'position', vmath.vector3(self.start_zero_position.x, history.opening / 50 + 100, self.start_zero_position.z))
+	local origin_pos = go.get('zero', 'position')
+	go.set("zero#sprite", "tint", vmath.vector4(1,1,1,0.3))
+
+	if stick_scale <= 0 then
+		go.set("stick#sprite", "tint", vmath.vector4(1,1,1,0))
+	else
+		if is_up then
+			go.set("stick#sprite", "tint", vmath.vector4(1,0,0,1))
+		else
+			go.set("stick#sprite", "tint", vmath.vector4(0,0,1,1))
+		end
+		--go.set("stick#sprite", "play_animation", {id = hash('red')})
+		go.set("stick", "position", origin_pos + vmath.vector3(0, ((stick_scale / 2) - lower_stick_scale), 0) )
+		-- sprite가 2px, 2로 나눠줘야 함
+		go.set("stick", "scale", vmath.vector3(2, stick_scale / 2, 1))
+	end
+
+	if bar_scale <= 0 then
+		go.set("bar#sprite", "tint", vmath.vector4(1,1,1,0))
+	else
+		if is_up then
+			go.set("bar#sprite", "tint", vmath.vector4(1,0,0,1))
+		else
+			go.set("bar#sprite", "tint", vmath.vector4(0,0,1,1))
+		end
+		--go.set("bar#sprite", "play_animation", { id = is_up and hash("red") or hash("blue") }
+		go.set("bar", "position", origin_pos + vmath.vector3(0, (is_up and bar_scale/2 or bar_scale/-2), 0))
+		-- sprite가 2px, 2로 나눠줘야 함
+		go.set("bar", "scale", vmath.vector3(10, bar_scale / 2, 1))
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash('init') then
+		go.set("zero", "position", vmath.vector3(self.start_zero_position.x, -500, self.start_zero_position.z))
+		go.set("stick", "position", vmath.vector3(self.start_zero_position.x, -500, self.start_zero_position.z))
+		go.set("stick", "scale", vmath.vector3(1,1,1))
+		go.set("bar", "position", vmath.vector3(self.start_zero_position.x, -500, self.start_zero_position.z))
+		go.set("bar", "scale", vmath.vector3(1,1,1))
+	elseif message_id == hash('update') then
+		render(self, message)
+	end
+end

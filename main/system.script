@@ -1,0 +1,218 @@
+-- 광기
+-- 100배 레버리지로 얼마를 벌 수 있을까?
+
+-- 시작가는 10,000원
+-- 현재 가격에서 랜덤으로 상승 하락 시킨다.
+-- 상승/하락의 가격은 랜덤에서 비율로 결정
+-- 변동가의 최대 (1% ~ 50) * 50
+-- 액면가 50원
+-- 1초마다 가격 변동
+-- 가장 최근 10개의 사이클(30틱 1사이클)만 저장 시초가/종가/최고가/최저가 -> 그래프 그리기
+
+-- 게임 시작화면
+-- 로고 / 시작버튼
+
+-- 게임 종료시
+-- 로컬에 내 수익 저장
+-- 다시하기 버튼 표시
+
+-- 1초에 30번의 가격 업데이트가 발생
+local FREQUENCY = 1 / 20
+-- 시초가
+local OPENING_PRICE = 10000
+-- 액면가
+local FACE_VALUE = 50
+-- 하나의 음봉/양봉이 나타내는 기간
+local TICK = 60
+-- stock_history 테이블의 기링
+local HISTORY_LENGTH = 10
+
+-- 주식의 현재 가격
+-- 시초가는 항상 1만원
+-- tick - 1 ~ 60
+-- highest - 가장 높은 가격
+-- lowest - 가장 낮은 가격
+-- closing - 가장 마지막 tick 가격
+-- opening - tick이 1일 때 가격
+local stock_history = {
+	{
+		tick = 1,
+		highest = OPENING_PRICE,
+		lowest = OPENING_PRICE,
+		closing = OPENING_PRICE,
+		opening = OPENING_PRICE
+	}
+}
+-- 타이머 기록
+-- delta time를 계속해서 가산
+local timer = 0
+-- 게임 상태를 나타냅니다
+-- init - 매수 대기하는 상태
+-- buying - 매수한 상태
+-- gameover - 마진콜
+-- sold - 매도
+local status = "init"
+-- 롱인지 숏인지 판단
+local is_long = true
+-- 나의 매입가격
+local buy_price = 0
+
+-- 새로운 stock_history의 요소를 생성
+local function new_stock_history(price)
+	return {
+		tick = 0,
+		highest = price,
+		lowest = price,
+		opening = price,
+		closing = price,
+	}
+end
+
+-- next_price()
+-- 상승/하락 여부 결정
+-- 변동 비율 결정
+-- 30% - 액면가 * 2
+-- 25% - 액면가 * 3
+-- 20% - 액면가
+-- 15% - 액면가 * 4
+-- 10% - 현재가격 * 2%
+-- return 다음 가격
+local function next_price_change(current_price)
+	local random = math.random()
+	
+	if random > 0.9 then
+		return math.floor((current_price * (math.random() / 10)) / 50) * 50
+	elseif random > 0.75 then
+		return FACE_VALUE * 5
+	elseif random > 0.55  then
+		return FACE_VALUE * 2
+	elseif random > 0.3 then
+		return FACE_VALUE * 3
+	else
+		return FACE_VALUE * 4
+	end
+end
+
+-- 다음 가격변동이 상승일지 하락일지 랜덤 반환
+local function is_next_up()
+	local random = math.random()
+	if random > 0.5 then
+		return true
+	end
+	return false
+end
+
+-- 상태를 변경하고 ui에 상태 변화를 알리기
+local function update_status(new_status, message)
+	if message == nil then
+		message = {}
+	end
+	status = new_status
+	message.status = new_status
+	msg.post("#gui", new_status, message)
+end
+
+local function initialize()
+	stock_history = {
+		{
+			tick = 1,
+			highest = OPENING_PRICE,
+			lowest = OPENING_PRICE,
+			closing = OPENING_PRICE,
+			opening = OPENING_PRICE
+		}
+	}
+	update_status('init')
+	timer = 0
+	buy_price = 0
+	msg.post('/chart/renderer', 'init', {length=HISTORY_LENGTH})
+end
+
+-- 게임 오버
+local function margin_call()
+	update_status("gameover")
+end
+
+function init(self)
+	initialize()
+end
+
+-- update()
+-- next_price = next_stock_price()
+-- ui 업데이트
+-- if is_long && next_price < buy_price * 0.99
+--  margin_call()
+-- if !is_long && next_price > buy_price * 1.01
+--  margin_call()
+function update(self, dt)
+	if status == "gameover" or status == "sold" then
+		return
+	end
+
+	timer = timer + dt
+	while timer >= FREQUENCY do
+		timer = timer - FREQUENCY
+
+		local is_up = is_next_up()
+		local current_price = stock_history[1].closing
+		local price_change = next_price_change(current_price)
+
+		-- 만약 0원 아래로 내려가는 상황이 발생하면
+		if not is_up and current_price <= FACE_VALUE then
+			is_up = true
+		end
+		
+		local new_price = is_up and current_price + price_change or current_price - price_change
+
+		-- tick이 FREQUENCY를 넘어갔다면,
+		-- 새로운 테이블을 1번에 삽입
+		-- 테이블의 길이는 항상 10으로 고정
+		if stock_history[1].tick >= TICK then 
+			table.insert(stock_history, 1, new_stock_history(new_price))
+			if #stock_history > HISTORY_LENGTH then
+				table.remove(stock_history, #stock_history)
+			end
+		end
+		
+		-- stock_history 업데이트
+		stock_history[1].tick = stock_history[1].tick + 1
+		stock_history[1].closing = new_price
+		stock_history[1].lowest = math.min(new_price, stock_history[1].lowest)
+		stock_history[1].highest = math.max(new_price, stock_history[1].highest)
+
+		-- print('[', stock_history[1].tick, '] ', stock_history[1].closing, '(', is_up and price_change or -price_change, ')', ' | 최고가 : ', stock_history[1].highest, ' | 최저가 : ', stock_history[1].lowest)
+		-- print('매수가 : ' .. buy_price .. ' | 수익률 : ' .. (stock_history[1].closing - buy_price) / buy_price * 100)
+		msg.post('/chart/renderer', 'update', stock_history)
+		msg.post('#gui', 'update', { price = new_price, is_up = is_up, price_change = price_change, status = status, buy_price = buy_price, is_long = is_long })
+	end
+	if status ~= "buying" then
+		return
+	end
+	-- 마진콜
+	if is_long and stock_history[1].closing < buy_price * 0.99 then
+		margin_call()
+	end
+	if not is_long and stock_history[1].closing > buy_price * 1.01 then
+		margin_call()
+	end
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("long") then
+		if status ~= "init" then
+			return
+		end
+		is_long = true
+		buy_price = stock_history[1].closing
+		update_status('buying', {buy_price = buy_price, is_long = is_long})
+	elseif action_id == hash("sell") then
+		if status == "buying" then
+			update_status('sold')
+			msg.post("#gui", "sold", { buy_price = buy_price, price = stock_history[1].closing })
+		end
+	elseif action_id == hash("retry") then
+		if status == "gameover" or status == "sold" then
+			initialize()
+		end
+	end
+end

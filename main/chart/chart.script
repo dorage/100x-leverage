@@ -1,0 +1,27 @@
+-- 표현할 차트의 길이
+-- system에서 message로 전달 받음
+local length = 0
+local go = {}
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("init") then
+		if #go ~= 0 then
+			for i = 1, length do
+				msg.post(go[i][hash('/controller')], 'init')
+			end
+			return
+		end
+		
+		length = message.length
+		for i = 1, length do
+			local object_hash = collectionfactory.create('#candlestick', vmath.vector3((-40 * 3) + i * 40, -900, 0), nil, nil, nil)
+			table.insert(go, 1, object_hash)
+		end
+	elseif message_id == hash('update') then
+		for i = 1, length do
+			if message[i] ~= nil then
+				msg.post(go[i][hash('/controller')], 'update', message[i])
+			end
+		end
+	end
+end

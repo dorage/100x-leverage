@@ -1,0 +1,30 @@
+local function calc_percent(current_price, buy_price)
+	return math.floor(((current_price - buy_price) / buy_price * 100) * 10) / 10
+end
+	
+-- 현재 가격을 실시간으로 보여주기
+-- 매입하면, 내가 산 가격과 현재 가격에 대한 수익률 보여주기
+-- 파산하면, 파산 메시지 보여주기
+-- 매도하면, 수익률 보여주기
+function on_message(self, message_id, message, sender)
+	if message_id == hash('update') then		
+		-- update stock price
+		local text_stat = "Current Price : " .. message.price .. "$ (".. (message.is_up and "+" or "-") .. message.price_change .. "$)"
+		gui.set_text(gui.get_node('stat'), text_stat)
+		
+		if message.status == "buying" and message.buy_price ~= nil and message.is_long ~= nil then
+			local text_buy = "Buy Price : " .. message.buy_price .. "$ (" .. calc_percent(message.price, message.buy_price) .. "%)"
+			gui.set_text(gui.get_node("buy"), text_buy)
+		end
+	elseif message_id == hash('init') then
+		gui.set_alpha(gui.get_node('bankrupt'), 0)
+		gui.set_alpha(gui.get_node('sold'), 0)
+		gui.set_text(gui.get_node("buy"), "")
+	elseif message_id == hash('gameover') then
+		gui.set_alpha(gui.get_node('bankrupt'), 1)
+	elseif message_id == hash('sold') then
+		local text_sold = "You earned " .. message.price - message.buy_price .. "$ (" .. calc_percent(message.price, message.buy_price) .. "%)"
+		gui.set_text(gui.get_node("sold_title"), text_sold)
+		gui.set_alpha(gui.get_node('sold'), 1)
+	end
+end

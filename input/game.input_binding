@@ -1,0 +1,16 @@
+key_trigger {
+  input: KEY_A
+  action: "long"
+}
+key_trigger {
+  input: KEY_S
+  action: "short"
+}
+key_trigger {
+  input: KEY_SPACE
+  action: "sell"
+}
+key_trigger {
+  input: KEY_R
+  action: "retry"
+}

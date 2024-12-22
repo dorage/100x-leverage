@@ -1,0 +1,178 @@
+script: "/main/gui/gui.gui_script"
+fonts {
+  name: "default"
+  font: "/builtins/fonts/default.font"
+}
+nodes {
+  position {
+    x: 245.0
+    y: 545.0
+  }
+  scale {
+    z: 1.42
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_TEXT
+  text: "Buying : 0"
+  font: "default"
+  id: "stat"
+  inherit_alpha: true
+}
+nodes {
+  position {
+    x: 245.0
+    y: 575.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_TEXT
+  text: "\'long(a)\', \'sell(space)\'"
+  font: "default"
+  id: "help"
+  inherit_alpha: true
+}
+nodes {
+  position {
+    x: 245.0
+    y: 521.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_TEXT
+  font: "default"
+  id: "buy"
+  inherit_alpha: true
+}
+nodes {
+  position {
+    x: 244.0
+    y: 342.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_BOX
+  blend_mode: BLEND_MODE_MULT
+  id: "bankrupt"
+  inherit_alpha: true
+  alpha: 0.0
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  scale {
+    x: 2.38
+    y: 2.38
+    z: 2.38
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  color {
+    x: 0.0
+    y: 0.0
+  }
+  type: TYPE_TEXT
+  text: "You are bankrupt!!"
+  font: "default"
+  id: "title"
+  parent: "bankrupt"
+  inherit_alpha: true
+}
+nodes {
+  position {
+    y: -40.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_TEXT
+  text: "start agin with \'R\' key"
+  font: "default"
+  id: "description"
+  parent: "bankrupt"
+  inherit_alpha: true
+}
+nodes {
+  position {
+    x: 244.0
+    y: 342.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_BOX
+  blend_mode: BLEND_MODE_MULT
+  id: "sold"
+  inherit_alpha: true
+  alpha: 0.0
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  scale {
+    x: 2.38
+    y: 2.38
+    z: 2.38
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  color {
+    y: 0.0
+    z: 0.0
+  }
+  type: TYPE_TEXT
+  text: "You got \'5,000 (5%)\'"
+  font: "default"
+  id: "sold_title"
+  parent: "sold"
+  inherit_alpha: true
+}
+nodes {
+  position {
+    y: -40.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_TEXT
+  text: "start agin with \'R\' key"
+  font: "default"
+  id: "description1"
+  parent: "sold"
+  inherit_alpha: true
+}
+nodes {
+  position {
+    x: 241.0
+    y: 622.0
+  }
+  scale {
+    x: 3.42
+    y: 3.42
+    z: 3.42
+  }
+  size {
+    x: 100.0
+    y: 50.0
+  }
+  type: TYPE_TEXT
+  text: "100x LEVERAGE"
+  font: "default"
+  id: "text"
+  inherit_alpha: true
+}
+material: "/builtins/materials/gui.material"
+adjust_reference: ADJUST_REFERENCE_PARENT
